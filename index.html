@@ -74,6 +74,7 @@ main{display:grid;grid-template-columns:1fr 340px;min-height:0}
 .cap{fill:#fff;stroke:#000;stroke-width:1;vector-effect:non-scaling-stroke;display:none;pointer-events:none}
 .study .cap,.cap.on{display:block}
 .cap.extra{display:none}
+#map.extra-on.study .cap.extra{display:block}
 .cap.on{fill:#000;stroke:#fff}
 #ping{fill:none;stroke:#fff;stroke-width:3;vector-effect:non-scaling-stroke;pointer-events:none;display:none}
 #ping.on{display:block}
@@ -225,7 +226,7 @@ const EXTRA_CTX = "M970.0,731.6L981.8,726.0L996.8,711.4L1010.7,706.1L1020.9,696.
 const RU_EXT = "M1220.0,0.0L1220.0,84.2L1215.3,88.9L1215.4,94.7L1210.0,91.7L1209.1,84.2L1206.7,82.2L1205.0,88.4L1196.9,91.9L1198.8,96.8L1189.9,93.2L1190.5,97.0L1182.7,106.1L1176.8,98.8L1161.0,91.6L1158.8,99.4L1149.7,102.8L1144.7,107.1L1141.8,118.3L1144.4,121.9L1135.8,139.1L1125.9,152.9L1126.7,161.5L1120.0,166.4L1101.9,196.8L1093.8,201.5L1097.0,211.1L1104.1,208.1L1102.1,212.2L1104.1,215.4L1109.7,212.4L1117.3,212.8L1107.1,222.6L1108.5,230.5L1115.7,234.9L1111.1,251.0L1119.8,252.5L1136.2,248.8L1141.1,259.0L1138.5,266.2L1133.0,271.2L1126.6,271.3L1127.5,278.6L1125.5,282.9L1123.0,281.1L1115.5,284.8L1104.6,282.2L1098.3,286.2L1096.5,293.5L1089.3,293.8L1083.9,299.0L1080.1,314.3L1062.3,314.3L1067.2,324.5L1056.0,317.8L1041.1,315.2L1032.0,321.1L1025.1,319.2L1017.4,330.4L1013.2,328.3L1007.8,329.3L1006.1,342.3L999.2,351.8L999.6,357.9L995.8,366.7L993.4,367.7L1002.6,378.6L1002.4,381.0L997.7,385.5L984.2,379.0L980.8,381.3L982.2,390.0L980.6,398.9L982.8,406.4L988.0,409.4L987.1,418.9L990.5,427.5L997.8,428.4L1001.0,434.2L1005.8,437.1L1007.7,434.5L1018.0,431.5L1038.5,445.1L1038.2,447.1L1033.2,448.5L1034.5,451.8L1047.5,453.0L1041.8,461.6L1044.4,465.2L1040.6,466.2L1038.1,472.8L1032.1,477.3L1032.2,480.0L1028.8,479.2L1031.4,482.8L1031.9,500.2L1030.1,499.6L1029.0,508.4L1030.9,511.1L1035.6,510.7L1042.1,513.6L1049.7,524.0L1049.2,515.7L1054.8,535.0L1083.0,551.3L1078.3,570.3L1069.3,573.1L1055.6,566.3L1053.0,567.9L1035.0,566.3L1032.4,559.6L1027.6,561.6L1018.3,560.2L1018.0,563.9L1012.8,562.9L1003.9,571.5L1001.7,568.1L984.7,565.8L970.0,570.6L970.0,0.0Z";
 const BASIC = ['GE','AM','AZ','TR','CY','MK','GR','BG','RO','HU','MD','AL','PL','RU','UA','BY','SE','NO','IS','LT','LV','EE','FI'];
 const C = {}; MAP.c.forEach(c => C[c.k] = c); EXTRA.forEach(c => C[c.k] = c);
-const KEYS = MAP.c.map(c => c.k);
+const KEYS = MAP.c.map(c => c.k).concat(EXTRA.map(c => c.k));
 const $ = s => document.querySelector(s);
 const NS = 'http://www.w3.org/2000/svg';
 const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
@@ -268,7 +269,7 @@ function zoomAt(f, cx, cy) {
   V = { x: p.x - (p.x - V.x) * r, y: p.y - (p.y - V.y) * r, w: w, h: w * aspect }; applyView();
 }
 function zoomBtn(f) { const b = svg.getBoundingClientRect(); zoomAt(f, b.left + b.width / 2, b.top + b.height / 2); }
-applyView();
+showExtras(true); resetView();
 const pts = new Map(); let moved = false, pinchD = 0;
 svg.addEventListener('pointerdown', e => { pts.set(e.pointerId, { x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY }); if (pts.size === 1) moved = false; });
 svg.addEventListener('pointermove', e => {
@@ -426,11 +427,11 @@ function stopRun() { clearTimeout(G.to); cancelAnimationFrame(G.raf); clearMarks
 function panel(count, text, hint) { $('#pCount').textContent = count; $('#pText').textContent = text; $('#pHint').textContent = hint || ''; opts.textContent = ''; fb.textContent = ''; fb.className = ''; }
 
 function pool() { return G.set === 'basic' ? BASIC : KEYS; }
-function toTitle() { stopRun(); showExtras(false); G = { mode: 'title', run: ++RUN, score: 0 }; hud(); panel('', '', ''); resetView(); show('ovTitle'); }
+function toTitle() { stopRun(); showExtras(true); G = { mode: 'title', run: ++RUN, score: 0 }; hud(); panel('', '', ''); resetView(); show('ovTitle'); }
 function startGame(set) {
   Snd.start(); stopRun();
   G = { mode: 'play', set: set === 'basic' ? 'basic' : 'full', run: ++RUN, level: 0, score: 0, lives: VIDAS, streak: 0, ok: 0, ko: 0, locked: true };
-  showExtras(G.set === 'basic'); resetView(); startLevel();
+  showExtras(true); resetView(); startLevel();
 }
 function startLevel() {
   const L = LEVELS[G.level]; G.queue = shuffle(pool()).slice(0, PREGUNTAS); G.qi = 0; G.locked = true; hud();
@@ -508,7 +509,7 @@ async function saveScore() {
 
 /* ---------- Modo estudio ---------- */
 function startStudy() {
-  Snd.start(); stopRun(); showExtras(false); G = { mode: 'study', run: ++RUN, score: 0 }; hud(); resetView(); show(null);
+  Snd.start(); stopRun(); showExtras(true); G = { mode: 'study', run: ++RUN, score: 0 }; hud(); resetView(); show(null);
   svg.classList.add('study');
   panel('MODO ESTUDIO', 'TOCA UN PAÍS', 'Verás su nombre y su capital. Los puntos blancos son las capitales. Pulsa X para volver al menú.');
 }

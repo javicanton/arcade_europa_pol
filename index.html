@@ -27,7 +27,7 @@ body{background:var(--bg);color:var(--ink);font-family:'Press Start 2P',ui-monos
 body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:50;background:repeating-linear-gradient(rgba(0,0,0,.2) 0 1px,transparent 1px 3px)}
 button,input{font:inherit;color:inherit}
 #app{display:grid;grid-template-rows:auto 8px 1fr;height:100vh;height:100dvh}
-.hud{display:flex;gap:14px;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:4px solid var(--blue);background:#12122c}
+.hud{display:flex;gap:14px;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:4px solid var(--blue);background:#12122c;position:relative;z-index:20}
 .hud div{display:flex;flex-direction:column;gap:4px;min-width:0}
 .hud span{color:var(--cyan);font-size:8px}
 .hud b{color:var(--yel);font-weight:400;white-space:nowrap}
@@ -82,7 +82,8 @@ main{display:grid;grid-template-columns:1fr 340px;min-height:0}
 /* pantallas */
 .overlay{position:fixed;inset:0;display:none;place-items:center;background:rgba(6,6,22,.9);z-index:10;text-align:center;padding:18px;overflow:auto}
 .overlay.on{display:grid}
-.box{max-width:640px;width:100%;display:flex;flex-direction:column;gap:18px;align-items:center}
+.box{max-width:640px;width:100%;display:flex;flex-direction:column;gap:14px;align-items:center}
+#ovTitle .box{gap:12px}
 h1{font-size:clamp(22px,6vw,44px);margin:0;font-weight:400;color:var(--yel);text-shadow:4px 4px 0 var(--pink),8px 8px 0 var(--blue);line-height:1.3}
 h2{font-size:clamp(15px,3.6vw,24px);margin:0;font-weight:400;color:var(--yel);text-shadow:3px 3px 0 var(--pink)}
 .sub{color:var(--cyan)}
@@ -105,6 +106,9 @@ h2{font-size:clamp(15px,3.6vw,24px);margin:0;font-weight:400;color:var(--yel);te
 #rkSrc{font-size:8px;color:#9aa0d0}
 .row{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
 .row .btn{min-width:150px}
+#ovTitle .modes{width:100%;max-width:560px}
+#ovTitle .modes .btn{min-width:0;flex:1 1 200px}
+#bMute{min-width:220px}
 
 @media (max-width:820px){
   body{font-size:9px}
@@ -116,6 +120,10 @@ h2{font-size:clamp(15px,3.6vw,24px);margin:0;font-weight:400;color:var(--yel);te
   #fb{min-height:3.4em}#fb b{font-size:11px;margin-bottom:4px}
   .hud{padding:8px 10px;gap:8px}.hud span{font-size:7px}
   .btn{min-width:220px;padding:14px 16px}
+  #ovTitle .box{gap:10px}
+  #ovTitle .modes .btn,#bMute{min-width:0;width:100%;flex:1 1 100%}
+  h1{font-size:clamp(20px,7vw,36px)}
+  .rules{font-size:8px;padding:10px 12px;line-height:1.8}
 }
 @media (prefers-reduced-motion:reduce){.blink,.c.target,.shake{animation:none}.c.target{fill:#fff}}
 </style>
@@ -164,10 +172,13 @@ h2{font-size:clamp(15px,3.6vw,24px);margin:0;font-weight:400;color:var(--yel);te
   <h1>EUROPA<br>ARCADE</h1>
   <div class="sub">PAÍSES Y CAPITALES · 2º ESO</div>
   <div class="blink" style="color:var(--pink)">ELIGE MODO</div>
-  <button class="btn" id="bBasic">BÁSICO</button>
-  <button class="btn" id="bFull">COMPLETO</button>
+  <div class="row modes">
+    <button class="btn" id="bBasic">BÁSICO</button>
+    <button class="btn" id="bFull">COMPLETO</button>
+  </div>
   <button class="btn alt" id="bStudy">ESTUDIAR EL MAPA</button>
   <button class="btn alt" id="bRank">RANKING</button>
+  <button class="btn alt" id="bMute" type="button" aria-pressed="false">SILENCIAR MÚSICA</button>
   <div class="rules">
     <em>BÁSICO:</em> 23 PAÍSES · <em>COMPLETO:</em> TODOS<br>
     4 FASES x 10 PREGUNTAS · 5 VIDAS<br>
@@ -343,8 +354,21 @@ const Snd = (() => {
     get muted() { return muted; }
   };
 })();
-$('#bMusic').classList.toggle('off', Snd.muted);
-$('#bMusic').onclick = () => { Snd.start(); $('#bMusic').classList.toggle('off', Snd.toggle()); };
+function syncMuteUi() {
+  const on = Snd.muted;
+  $('#bMusic').classList.toggle('off', on);
+  $('#bMusic').setAttribute('aria-pressed', on ? 'true' : 'false');
+  const m = $('#bMute');
+  if (m) {
+    m.textContent = on ? 'ACTIVAR MÚSICA' : 'SILENCIAR MÚSICA';
+    m.classList.toggle('on', on);
+    m.setAttribute('aria-pressed', on ? 'true' : 'false');
+  }
+}
+function toggleMute() { Snd.start(); Snd.toggle(); syncMuteUi(); }
+syncMuteUi();
+$('#bMusic').onclick = toggleMute;
+$('#bMute').onclick = toggleMute;
 
 /* ---------- Ranking ---------- */
 const Rank = (() => {

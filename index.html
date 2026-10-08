@@ -108,7 +108,6 @@ h2{font-size:clamp(15px,3.6vw,24px);margin:0;font-weight:400;color:var(--yel);te
 .row .btn{min-width:150px}
 #ovTitle .modes{width:100%;max-width:560px}
 #ovTitle .modes .btn{min-width:0;flex:1 1 200px}
-#bMute{min-width:220px}
 
 @media (max-width:820px){
   body{font-size:9px}
@@ -121,7 +120,7 @@ h2{font-size:clamp(15px,3.6vw,24px);margin:0;font-weight:400;color:var(--yel);te
   .hud{padding:8px 10px;gap:8px}.hud span{font-size:7px}
   .btn{min-width:220px;padding:14px 16px}
   #ovTitle .box{gap:10px}
-  #ovTitle .modes .btn,#bMute{min-width:0;width:100%;flex:1 1 100%}
+  #ovTitle .modes .btn{min-width:0;width:100%;flex:1 1 100%}
   h1{font-size:clamp(20px,7vw,36px)}
   .rules{font-size:8px;padding:10px 12px;line-height:1.8}
 }
@@ -178,7 +177,6 @@ h2{font-size:clamp(15px,3.6vw,24px);margin:0;font-weight:400;color:var(--yel);te
   </div>
   <button class="btn alt" id="bStudy">ESTUDIAR EL MAPA</button>
   <button class="btn alt" id="bRank">RANKING</button>
-  <button class="btn alt" id="bMute" type="button" aria-pressed="false">SILENCIAR MÚSICA</button>
   <div class="rules">
     <em>BÁSICO:</em> 23 PAÍSES · <em>COMPLETO:</em> TODOS<br>
     4 FASES x 10 PREGUNTAS · 5 VIDAS<br>
@@ -358,17 +356,9 @@ function syncMuteUi() {
   const on = Snd.muted;
   $('#bMusic').classList.toggle('off', on);
   $('#bMusic').setAttribute('aria-pressed', on ? 'true' : 'false');
-  const m = $('#bMute');
-  if (m) {
-    m.textContent = on ? 'ACTIVAR MÚSICA' : 'SILENCIAR MÚSICA';
-    m.classList.toggle('on', on);
-    m.setAttribute('aria-pressed', on ? 'true' : 'false');
-  }
 }
-function toggleMute() { Snd.start(); Snd.toggle(); syncMuteUi(); }
+$('#bMusic').onclick = () => { Snd.start(); Snd.toggle(); syncMuteUi(); };
 syncMuteUi();
-$('#bMusic').onclick = toggleMute;
-$('#bMute').onclick = toggleMute;
 
 /* ---------- Ranking ---------- */
 const Rank = (() => {
